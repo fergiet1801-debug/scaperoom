@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: Colombia y el Mundo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            transition: background-color 0.5s;
+        }
+        #welcome {
+            display: block;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 50px;
+            border-radius: 15px;
+            margin: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 1s;
+        }
+        #game {
+            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .question {
+            display: none;
+            animation: slideIn 0.5s;
+        }
+        .question.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        img {
+            max-width: 200px;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 18px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            margin: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+        }
+        .hint-btn {
+            background: linear-gradient(45deg, #FF9800, #E68900);
+        }
+        .hint-btn:hover {
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.5);
+        }
+        .restart-btn {
+            background: linear-gradient(45deg, #2196F3, #0b7dda);
+        }
+        .restart-btn:hover {
+            box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
+        }
+        input {
+            padding: 12px;
+            font-size: 16px;
+            margin: 10px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .option {
+            margin: 8px;
+            padding: 12px;
+            background: linear-gradient(45deg, #e0e0e0, #d0d0d0);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            color: #333;
+        }
+        .option:hover {
+            background: linear-gradient(45deg, #d0d0d0, #c0c0c0);
+            transform: scale(1.02);
+        }
+        .option.selected {
+            background: linear-gradient(45deg, #2196F3, #0b7dda);
+            color: white;
+        }
+        .option.correct {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+        .option.incorrect {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+        #timer {
+            font-size: 28px;
+            color: #ffeb3b;
+            margin: 20px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+        }
+        #lives {
+            font-size: 24px;
+            color: #ffeb3b;
+            margin: 10px;
+            font-weight: bold;
+        }
+        #threat {
+            font-size: 24px;
+            color: #f44336;
+            margin: 10px;
+            font-weight: bold;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 20px;
+            color: #ffeb3b;
+            text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+        }
+        .fun-fact {
+            font-style: italic;
+            color: #81c784;
+            margin-top: 10px;
+            font-size: 18px;
+        }
+        .confetti {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="5" fill="%23ff0000"/><circle cx="30" cy="30" r="3" fill="%2300ff00"/><circle cx="70" cy="20" r="4" fill="%230000ff"/><circle cx="20" cy="70" r="4" fill="%230000ff"/><circle cx="80" cy="80" r="3" fill="%23ff00ff"/></svg>') repeat;
+            animation: confetti 3s linear infinite;
+        }
+        @keyframes confetti {
+            0% { transform: translateY(-100vh) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+        .lock-icon {
+            font-size: 50px;
+            color: #ffeb3b;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            width: 80%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .threat-bar {
+            width: 80%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        .threat-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .guardian-angry {
+            font-size: 100px;
+            color: #f44336;
+            margin: 20px;
+            display: none;
+        }
+        .kid-happy {
+            font-size: 100px;
+            color: #ffeb3b;
+            margin: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome">
+        <div class="lock-icon">🔒</div>
+        <h1>¡Bienvenidos al Escape Room Divertido!</h1>
+        <img src="https://via.placeholder.com/200x200?text=Muñeco+Jugando" alt="Muñeco jugando">
+        <p>¡Resuelve las preguntas, usa pistas y vence el tiempo para escapar del Guardían! Tema: Colombia y el Mundo.</p>
+        <button onclick="startGame()">¡Jugar Ahora!</button>
+    </div>
+
+    <div id="game">
+        <div class="lock-icon">🔓</div>
+        <h2>Escape Room: Colombia y el Mundo</h2>
+        <div id="timer">Tiempo restante: 7:00</div>
+        <div id="lives">Vidas: ❤️❤️❤️</div>
+        <div id="threat">Amenaza del Guardían: 👻 0%</div>
+        <div class="threat-bar">
+            <div class="threat-fill" id="threat-fill"></div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div id="questions">
+            <div class="question active" id="q1">
+                <p>¿Cuál es la capital de Colombia?</p>
+                <div class="options">
+                    <div class="option" onclick="selectOption(1, 'Bogotá', this)">Bogotá</div>
+                    <div class="option" onclick="selectOption(1, 'Medellín', this)">Medellín</div>
+                    <div class="option" onclick="selectOption(1, 'Cali', this)">Cali</div>
+                </div>
+                <button class="hint-btn" onclick="showHint('Es la ciudad más alta del mundo a 2.600 metros sobre el nivel del mar.')">Pista</button>
+            </div>
+            <div class="question" id="q2">
+                <p>¿En qué continente está Colombia?</p>
+                <input type="text" id="answer2">
+                <button onclick="document.getElementById('result').innerHTML = ''; checkAnswer(2, document.getElementById('answer2').value.trim())">Verificar</button>
+                <button class="hint-btn" onclick="showHint('Empieza con A y termina con América.')">Pista</button>
+            </div>
+            <div class="question" id="q3">
+                <p>¿Cuál es el río más largo del mundo?</p>
+                <div class="options">
+                    <div class="option" onclick="selectOption(3, 'Nilo', this)">Nilo</div>
+                    <div class="option" onclick="selectOption(3, 'Amazonas', this)">Amazonas</div>
+                    <div class="option" onclick="selectOption(3, 'Yangtsé', this)">Yangtsé</div>
+                </div>
+                <button class="hint-btn" onclick="showHint('Fluye por la selva amazónica, hogar de muchos animales.')">Pista</button>
+            </div>
+            <div class="question" id="q4">
+                <p>¿Cómo se llama el planeta donde vivimos?</p>
+                <input type="text" id="answer4">
+                <button onclick="document.getElementById('result').innerHTML = ''; checkAnswer(4, document.getElementById('answer4').value.trim())">Verificar</button>
+                <button class="hint-btn" onclick="showHint('Es el único planeta conocido con vida.')">Pista</button>
+            </div>
+            <div class="question" id="q5">
+                <p>¿Qué océano queda al occidente de Colombia?</p>
+                <div class="options">
+                    <div class="option" onclick="selectOption(5, 'Pacífico', this)">Pacífico</div>
+                    <div class="option" onclick="selectOption(5, 'Atlántico', this)">Atlántico</div>
+                    <div class="option" onclick="selectOption(5, 'Índico', this)">Índico</div>
+                </div>
+                <button class="hint-btn" onclick="showHint('Es el océano más grande del mundo.')">Pista</button>
+            </div>
+            <div class="question" id="q6">
+                <p>¿Qué símbolo patrio es amarillo, azul y rojo?</p>
+                <input type="text" id="answer6">
+                <button onclick="document.getElementById('result').innerHTML = ''; checkAnswer(6, document.getElementById('answer6').value.trim())">Verificar</button>
+                <button class="hint-btn" onclick="showHint('Se iza en fiestas patrias y representa libertad.')">Pista</button>
+            </div>
+            <div class="question" id="q7">
+                <p>¿Quién fue el Libertador de Colombia?</p>
+                <div class="options">
+                    <div class="option" onclick="selectOption(7, 'Simón Bolívar', this)">Simón Bolívar</div>
+                    <div class="option" onclick="selectOption(7, 'José de San Martín', this)">José de San Martín</div>
+                    <div class="option" onclick="selectOption(7, 'Antonio Nariño', this)">Antonio Nariño</div>
+                </div>
+                <button class="hint-btn" onclick="showHint('Nació en Caracas y luchó por la independencia de varios países.')">Pista</button>
+            </div>
+            <div class="question" id="q8">
+                <p>¿Qué instrumento se usa para orientarse en un mapa?</p>
+                <input type="text" id="answer8">
+                <button onclick="document.getElementById('result').innerHTML = ''; checkAnswer(8, document.getElementById('answer8').value.trim())">Verificar</button>
+                <button class="hint-btn" onclick="showHint('Apunta siempre al norte magnético.')">Pista</button>
+            </div>
+            <div class="question" id="q9">
+                <p>¿Qué animal es el símbolo nacional de Colombia?</p>
+                <div class="options">
+                    <div class="option" onclick="selectOption(9, 'El cóndor', this)">El cóndor</div>
+                    <div class="option" onclick="selectOption(9, 'El jaguar', this)">El jaguar</div>
+                    <div class="option" onclick="selectOption(9, 'El loro', this)">El loro</div>
+                </div>
+                <button class="hint-btn" onclick="showHint('Es un ave majestuosa que vuela alto en los Andes.')">Pista</button>
+            </div>
+            <div class="question" id="q10">
+                <p>¿Quién gobierna un municipio?</p>
+                <input type="text" id="answer10">
+                <button onclick="document.getElementById('result').innerHTML = ''; checkAnswer(10, document.getElementById('answer10').value.trim())">Verificar</button>
+                <button class="hint-btn" onclick="showHint('Es elegido por votación popular.')">Pista</button>
+            </div>
+            <div class="question" id="q11">
+                <p>¿Qué línea imaginaria divide la Tierra en norte y sur?</p>
+                <div class="options">
+                    <div class="option" onclick="selectOption(11, 'Ecuador', this)">Ecuador</div>
+                    <div class="option" onclick="selectOption(11, 'Meridiano', this)">Meridiano</div>
+                    <div class="option" onclick="selectOption(11, 'Trópico', this)">Trópico</div>
+                </div>
+                <button class="hint-btn" onclick="showHint('Pasa por países como Ecuador, Brasil y Colombia.')">Pista</button>
+            </div>
+            <div class="question" id="q12">
+                <p>¿Qué recurso natural indispensable se obtiene de ríos y lagos?</p>
+                <input type="text" id="answer12">
+                <button onclick="document.getElementById('result').innerHTML = ''; checkAnswer(12, document.getElementById('answer12').value.trim())">Verificar</button>
+                <button class="hint-btn" onclick="showHint('Es esencial para la vida y se bebe todos los días.')">Pista</button>
+            </div>
+            <div class="question" id="q13">
+                <p>¿Cuál es la capital de Antioquia?</p>
+                <div class="options">
+                    <div class="option" onclick="selectOption(13, 'Medellín', this)">Medellín</div>
+                    <div class="option" onclick="selectOption(13, 'Bogotá', this)">Bogotá</div>
+                    <div class="option" onclick="selectOption(13, 'Cartagena', this)">Cartagena</div>
+                </div>
+                <button class="hint-btn" onclick="showHint('Es conocida como la Ciudad de la Eterna Primavera.')">Pista</button>
+            </div>
+            <div class="question" id="q14">
+                <p>¿Qué celebramos el 20 de julio en Colombia?</p>
+                <input type="text" id="answer14">
+                <button onclick="document.getElementById('result').innerHTML = ''; checkAnswer(14, document.getElementById('answer14').value.trim())">Verificar</button>
+                <button class="hint-btn" onclick="showHint('Es el día de la independencia de Colombia.')">Pista</button>
+            </div>
+            <div class="question" id="q15">
+                <p>¿Cuál es el deporte más popular en Colombia?</p>
+                <div class="options">
+                    <div class="option" onclick="selectOption(15, 'Fútbol', this)">Fútbol</div>
+                    <div class="option" onclick="selectOption(15, 'Ciclismo', this)">Ciclismo</div>
+                    <div class="option" onclick="selectOption(15, 'Voleibol', this)">Voleibol</div>
+                </div>
+                <button class="hint-btn" onclick="showHint('El equipo nacional es conocido como la Selección Colombia.')">Pista</button>        
+            </div>
+        </div>  
+        <div id="result"></div>
+        <button class="restart-btn" onclick="restartGame()">Reiniciar Juego</button>
+    </div>  
+    <div class="confetti" id="confetti" style="display:none;"></div>    
+    <div class="guardian-angry" id="guardian-angry">😠</div>
+    <div class="kid-happy" id="kid-happy">😄</div>
+    <script>
+        let currentQuestion = 1;
+        let lives = 3;
+        let threatLevel = 0;
+        let totalQuestions = 15;
+        let timer;
+        let timeRemaining = 420; // 7 minutes in seconds
+
+        function startGame() {
+            document.getElementById('welcome').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            startTimer();
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                if (timeRemaining <= 0) {
+                    clearInterval(timer);
+                    endGame(false);
+                } else {
+                    timeRemaining--;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            document.getElementById('timer').innerText = `Tiempo restante: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }   
+        function checkAnswer(questionNumber, answer) {  
+        const correctAnswers = {
+            1: 'Bogotá',
+            2: 'América',
+            3: 'Amazonas',
+            4: 'Tierra',
+            5: 'Pacífico',
+            6: 'La bandera de Colombia',
+            7: 'Simón Bolívar',
+            8: 'Brújula',
+            9: 'El cóndor',
+            10: 'Alcalde',
+            11: 'Ecuador',
+            12: 'Agua',
+            13: 'Medellín',
+            14: 'Independencia',
+            15: 'Fútbol'
+        };      
+        if (answer.toLowerCase() === correctAnswers[questionNumber].toLowerCase()) {
+            document.getElementById('result').innerHTML = `<span style="color: #4CAF50;">¡Correcto!</span>`;
+            showFunFact(questionNumber);
+            nextQuestion();
+        } else {
+            lives--;
+            threatLevel += 10;
+            updateLivesDisplay();
+            updateThreatDisplay();
+            document.getElementById('result').innerHTML = `<span style="color: #f44336;">Incorrecto. Intenta de nuevo.</span>`;
+            if (lives <= 0) {
+                endGame(false);
+            }
+        }   
+    }   
+        function selectOption(questionNumber, selectedAnswer, element) {
+            const correctAnswers = {
+                1: 'Bogotá',
+                3: 'Amazonas',
+                5: 'Pacífico',
+                7: 'Simón Bolívar',
+                9: 'El cóndor',
+                11: 'Ecuador',
+                13: 'Medellín',
+                15: 'Fútbol'
+            };
+            if (selectedAnswer === correctAnswers[questionNumber]) {
+                element.classList.add('correct');
+                document.getElementById('result').innerHTML = `<span style="color: #4CAF50;">¡Correcto!</span>`;
+                showFunFact(questionNumber);
+                setTimeout(() => {
+                    nextQuestion();
+                }, 1000);
+            } else {
+                element.classList.add('incorrect');
+                lives--;
+                threatLevel += 10;
+                updateLivesDisplay();
+                updateThreatDisplay();
+                document.getElementById('result').innerHTML = `<span style="color: #f44336;">Incorrecto. Intenta de nuevo.</span>`;
+                if (lives <= 0) {
+                    endGame(false);
+                }
+            }
+        }       
+        function nextQuestion() {
+            document.getElementById(`q${currentQuestion}`).classList.remove('active');
+            currentQuestion++;
+            if (currentQuestion > totalQuestions) {
+                endGame(true);
+            } else {
+                document.getElementById(`q${currentQuestion}`).classList.add('active');
+                updateProgressBar();
+            }
+        }   
+        function updateLivesDisplay() {
+            let hearts = '';
+            for (let i = 0; i < lives; i++) {
+                hearts += '❤️';
+            }
+            document.getElementById('lives').innerText = `Vidas: ${hearts}`;
+        }       
+        function updateThreatDisplay() {
+            document.getElementById('threat').innerText = `Amenaza del Guardían: 👻 ${threatLevel}%`;
+            document.getElementById('threat-fill').style.width = `${threatLevel}%`;
+            if (threatLevel >= 50) {
+                document.getElementById('guardian-angry').style.display = 'block';
+            }
+        }   
+        function updateProgressBar() {
+            const progressPercent = ((currentQuestion - 1) / totalQuestions) * 100;
+            document.getElementById('progress-fill').style.width = `${progressPercent}%`;
+        }   
+        function showHint(hint) {
+            alert(`Pista: ${hint}`);
+        }   
+        function showFunFact(questionNumber) {
+            const funFacts = {
+                1: 'Bogotá es la ciudad más alta del mundo a 2.600 metros sobre el nivel del mar.',
+                2: 'Colombia está en América del Sur.',
+                3: 'El río Amazonas es el más caudaloso del mundo y tiene la mayor cuenca hidrográfica.',
+                4: 'La Tierra es el único planeta conocido que alberga vida.',
+                5: 'El Océano Pacífico es el océano más grande del mundo.',
+                6: 'La bandera de Colombia tiene tres colores: amarillo, azul y rojo.',
+                7: 'Simón Bolívar liberó varios países de Sudamérica del dominio español.',
+                8: 'La brújula utiliza un imán para señalar el norte magnético.',
+                9: 'El cóndor andino es una de las aves voladoras más grandes del mundo.',
+                10: 'El alcalde es elegido por votación popular para gobernar un municipio.',
+                11: 'El ecuador divide la Tierra en hemisferio norte y sur.',
+                12: 'El agua cubre aproximadamente el 71% de la superficie de la Tierra.',
+                13: 'Medellín es conocida como la Ciudad de la Eterna Primavera por su clima agradable todo el año.',
+                14: 'El 20 de julio se celebra la independencia de Colombia de España en 1810.',
+                15: 'El fútbol es el deporte más popular en Colombia y la selección nacional es muy querida.'
+            };
+            const fact = funFacts[questionNumber];
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML += `<div class="fun-fact">Dato Curioso: ${fact}</div>`;
+        }   
+        function endGame(won) {
+            clearInterval(timer);
+            if (won) {
+                document.getElementById('result').innerHTML = `<span style="color: #4CAF50; font-size: 24px;">¡Felicidades! ¡Has escapado con éxito!</span>`;
+                document.getElementById('confetti').style.display = 'block';
+                document.getElementById('kid-happy').style.display = 'block';
+            } else {
+                document.getElementById('result').innerHTML = `<span style="color: #f44336; font-size: 24px;">¡Juego Terminado! No lograste escapar.</span>`;
+                document.getElementById('guardian-angry').style.display = 'block';
+            }
+            // Ocultar todas las preguntas
+            for (let i = 1; i <= totalQuestions; i++) {
+                document.getElementById(`q${i}`).classList.remove('active');
+            }
+        }   
+        function restartGame() {
+            location.reload();
+        }   
+    </script>
+ </body>
+</html>
